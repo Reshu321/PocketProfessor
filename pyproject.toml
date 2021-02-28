@@ -10,6 +10,7 @@ discord = "^1.0.1"
 RateMyProfessorPyAPI = "^1.2.1"
 RateMyProfessorAPI = "^1.2.0"
 replit = "^2.0.0"
+flask = "^1.1.2"
 
 [tool.poetry.dev-dependencies]
 

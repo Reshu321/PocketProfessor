@@ -4,60 +4,83 @@ import requests
 import ratemyprofessor
 import json
 import math
+from keep_alive import keep_alive
+import re
 
 client = discord.Client() #creates bot
 
+#displays professor information
 def getProfInfo(profName):
- 
   professor = ratemyprofessor.get_professor_by_school_and_name(
     ratemyprofessor.get_school_by_name("The University of Texas at Dallas"), profName)
   if professor is not None:
     return ("{0} works in the {1} Department of {2}.\nRating: {3} / 5.0\nDifficulty: {4} / 5.0".format(professor.name, professor.department, professor.school.name, professor.rating,professor.difficulty))
-    
   #Error message if not found 
-  if professor is None: 
-    return ("The prof is not on rate my professor")  
-    
+  else:
+    return ("The professor is not on rate my professor")  
 
-def cleaninput(input):
-  leftspace = input.find(" ")
-  rightspace = input.rfind(" ")
-  course = input[rightspace +1:len(input)]
-  numbers = course[len(course)-4:len(course)]
-  print (numbers)
-  letters = course[0:len(course)-4]
-  print (letters)
-  professor = input[0:rightspace]
-  print (professor)
-  firstname = professor[0:leftspace]
-  lastname = professor[leftspace+1:rightspace]
-  print(firstname)
-  print(lastname)
-  return(numbers,letters,professor,firstname,lastname)
+#cleans user input
+def cleanUserInput(input):
+  var = input.split()
+  print(var)
+  first = var[0]
+  last = var[1]
+  courseAll = var[2]
+  print(first)
+  print(last)
+  print(courseAll)
+  match = re.match(r"([a-z]+)([0-9]+)", courseAll, re.I)
+  if match:
+      items = match.groups()
+  print(items)
+  letters = items[0]
+  numb = items[1]
+  print(letters)
+  print(numb)
 
+  return first, last, letters, numb
   
-
-
+  
 @client.event #message when you log in
 async def on_ready():
   print('We have logged in as {0.user}'.format(client))
-
-@client.event #this event is for when a message is sent
+    
+@client.event
 async def on_message(message):
-  #if the message is from the bot, do nothing
   if message.author == client.user:
     return
-  #if the message begins with $prof, then ask for the prof name
-  if message.content.startswith('$prof'):
-    await message.channel.send('Enter first and last name:')
+  
+
+
+
+  # outputs professor info
+
+  
+  if message.content.startswith('!'):
+    inputTwo = message.content[1:]
+    firstname,lastname,letters,numbers = cleanUserInput(inputTwo)
+    professor = firstname + " " + lastname
+    profInfo = getProfInfo(professor)
+    await message.channel.send(profInfo)
  
   #if the message begins with !,
   #the string after is put into a variable
   if message.content.startswith("!"):
     input = message.content[1:]
-    numbers,letters,professor,firstname,lastname = cleaninput(input)
-    profInfo = getProfInfo(professor)
-    await message.channel.send(profInfo)
+    numbers = ""
+    letters = ""
+    firstname = ""
+    lastname = ""
+
+    firstname,lastname,letters,numbers = cleanUserInput(input)
+    professor = firstname + " " + lastname
+    await message.channel.send(search_subj(letters, numbers, firstname, lastname))
+
+
+
+  if message.content.startswith('$hello'):
+    greeting = "Welcome to Pick a Professor. Type ! Professor Name and Course Number to get information from Rate My Professor and UTD Grades. For Example '!Matthew Polze BLAW2301'"
+    await message.channel.send(greeting)
 
 
 
@@ -67,7 +90,7 @@ with open('complete.json') as f:
   
   
 # Define a function to search the item
-def search_subj (subj, num, prof):
+def search_subj (subj, num, first, last):
   totalAplus = 0
   totalA = 0
   totalAminus = 0
@@ -82,10 +105,9 @@ def search_subj (subj, num, prof):
   totalF = 0 
   totalW = 0
   
-
+#and (last in keyval['prof'])and (first in keyval['prof'])and (num == keyval['num'])
   for keyval in items:
-    if (subj == keyval['subj']) and (prof == keyval['prof'] and (num == keyval['num'])):
-      print(keyval['num'], keyval['term'])
+    if (first in str(keyval['prof'])) and (last in str(keyval['prof'])) and (subj == keyval['subj']) and (num == keyval['num']):
     #grade calculation
       if "A+" in keyval['grades']:
         totalAplus = totalAplus + int(keyval['grades']['A+'])
@@ -130,25 +152,20 @@ def search_subj (subj, num, prof):
 
   percentagePassing = round(((totalStudents-totalF)/totalStudents*100),2)
 
+  #percentageAtotalStudents   = totalStudents+""
+  
   #printing tests 
-  print(totalStudents)
-  print('%',percentageA)
-  print('%',percentageB)
-  print('%',percentageC)
-  print('%',percentageD)
-  print('%',percentageF)
-  print('%',percentagePassing)
-  #print('{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}'.format(totalA, totalAminus,totalBplus,totalB,totalBminus,totalCplus,totalC,totalCminus,totalDplus,totalD,totalF,totalW)
-   
-
-# searches using variables inputted from user
-subj = "CS"
-num = "1336"
-prof = "Le, Khiem V"
-search_subj(subj, num, prof)
+  percentageA = str(percentageA)
+  percentageB = str(percentageB)
+  percentageC = str(percentageC)
+  percentageD = str(percentageD)
+  percentageF = str(percentageF)
+  percentagePassing = str(percentagePassing)
+  
+  return ("Average grades for all semester\n")+("A:")+('%')+percentageA +(" | B:")+('%')+ percentageB+(" | C:")+('%') + percentageC + (" | D:")+('%')+percentageD +(" | F:")+('%')+ percentageF +(" | Passing avg:")+('%')+percentagePassing
 
 
 
-
-
+#runs web server
+keep_alive()
 client.run(os.getenv('TOKEN'))
