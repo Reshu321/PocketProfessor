@@ -12,12 +12,31 @@ def getProfInfo(profName):
   professor = ratemyprofessor.get_professor_by_school_and_name(
     ratemyprofessor.get_school_by_name("The University of Texas at Dallas"), profName)
   if professor is not None:
-    return ("{0} works in the {1} Department of {2}.\nRating: {3} / 5.0\nDifficulty: {4} / 5.0 \nTotal Ratings: {5} ".format(professor.name, professor.department, professor.school.name, professor.rating,professor.difficulty,professor.num_ratings))
+    return ("{0} works in the {1} Department of {2}.\nRating: {3} / 5.0\nDifficulty: {4} / 5.0".format(professor.name, professor.department, professor.school.name, professor.rating,professor.difficulty))
     
   #Error message if not found 
   if professor is None: 
     return ("The prof is not on rate my professor")  
     
+
+def cleaninput(input):
+  leftspace = input.find(" ")
+  rightspace = input.rfind(" ")
+  course = input[rightspace +1:len(input)]
+  numbers = course[len(course)-4:len(course)]
+  print (numbers)
+  letters = course[0:len(course)-4]
+  print (letters)
+  professor = input[0:rightspace]
+  print (professor)
+  firstname = professor[0:leftspace]
+  lastname = professor[leftspace+1:rightspace]
+  print(firstname)
+  print(lastname)
+  return(numbers,letters,professor,firstname,lastname)
+
+  
+
 
 @client.event #message when you log in
 async def on_ready():
@@ -35,13 +54,10 @@ async def on_message(message):
   #if the message begins with !,
   #the string after is put into a variable
   if message.content.startswith("!"):
-    profName = message.content[1:]
-    profInfo = getProfInfo(profName)
+    input = message.content[1:]
+    numbers,letters,professor,firstname,lastname = cleaninput(input)
+    profInfo = getProfInfo(professor)
     await message.channel.send(profInfo)
-
-  if message.content.startswith('$grades'):
-    await message.channel.send('Enter professor name and class number: (Ryan Lux)')
- 
 
 
 
@@ -49,7 +65,7 @@ async def on_message(message):
 with open('complete.json') as f:
   items = json.load(f)
   
-
+  
 # Define a function to search the item
 def search_subj (subj, num, prof):
   totalAplus = 0
