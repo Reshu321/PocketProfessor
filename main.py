@@ -5,17 +5,7 @@ import ratemyprofessor
 import json
 import math
 
-#STRING FORMAT EXAMPLE
-#print('Hello {}'.format("World"))
-
 client = discord.Client() #creates bot
-
-#basic summation in python
-#numbers = [2.5, 3, 4, -5]
-# start parameter is not provided
-#numbers_sum = sum(numbers)
-#print(numbers_sum)
-
 
 def getProfInfo(profName):
  
@@ -23,7 +13,6 @@ def getProfInfo(profName):
     ratemyprofessor.get_school_by_name("The University of Texas at Dallas"), profName)
   if professor is not None:
     return ("{0} works in the {1} Department of {2}.\nRating: {3} / 5.0\nDifficulty: {4} / 5.0 \nTotal Ratings: {5} ".format(professor.name, professor.department, professor.school.name, professor.rating,professor.difficulty,professor.num_ratings))
-    
     
   #Error message if not found 
   if professor is None: 
@@ -33,9 +22,6 @@ def getProfInfo(profName):
 @client.event #message when you log in
 async def on_ready():
   print('We have logged in as {0.user}'.format(client))
-
-#@client.event
-#await channel.send('Enter Name')
 
 @client.event #this event is for when a message is sent
 async def on_message(message):
@@ -57,27 +43,13 @@ async def on_message(message):
     await message.channel.send('Enter professor name and class number: (Ryan Lux)')
  
 
- 
+
 
 # load the json data
 with open('complete.json') as f:
   items = json.load(f)
   
 
-
-
-
-#just to confirm
-#def checktotal (subj, prof):
- # for keyval in items:
-  #  if (subj == keyval['subj']) and (prof == keyval['prof']):
-   #   print(keyval['num'], keyval['term'], keyval['sect'])
-    #grade calculation
-    #  print(keyval['grades']['A'])
-      #totalA = (keyval['grades']['A'])
-     # totalA = totalA + int(keyval['grades']['A'])
-
-  
 # Define a function to search the item
 def search_subj (subj, num, prof):
   totalAplus = 0
@@ -125,10 +97,9 @@ def search_subj (subj, num, prof):
         totalF = totalF + int(keyval['grades']['F'])
       if "W" in keyval['grades']:
         totalW = totalW + int(keyval['grades']['W'])
-  #grade percentages
-
   
-
+  
+  #grade percentage calculations
   totalStudents = (totalA + totalAminus + totalAplus + totalB + totalBminus + totalBplus + totalC + totalCminus + totalCplus + totalD + totalDplus + totalF)
 
   percentageA = round(((totalA + totalAplus + totalAminus) / totalStudents*100),2)
@@ -153,15 +124,13 @@ def search_subj (subj, num, prof):
   print('%',percentagePassing)
   #print('{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}'.format(totalA, totalAminus,totalBplus,totalB,totalBminus,totalCplus,totalC,totalCminus,totalDplus,totalD,totalF,totalW)
    
-# Input the item name that you want to search
+
+# searches using variables inputted from user
 subj = "CS"
 num = "1336"
 prof = "Le, Khiem V"
-#print("The number is:", search_subj(subj,prof))
-#checktotal(subj, prof)
 search_subj(subj, num, prof)
-  
-#print(data)
+
 
 
 
